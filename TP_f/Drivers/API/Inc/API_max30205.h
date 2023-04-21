@@ -13,7 +13,7 @@
 
 
 
-static float max30205_read_temperature(I2C_HandleTypeDef *hi2c);
+static void max30205_read_temperature(I2C_HandleTypeDef *hi2c,float *temperature);
 // Declaraciones de funciones y variables para la MEF(FiniteStateMachine) de lectura
 void lecturaFSM_init();
 typedef enum {

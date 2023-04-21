@@ -26,6 +26,7 @@ static float temperature;
 // Variables para almacenar información de los tiempos de espera
 static delay_t delay;
 static delay_t delay2;
+
 static void Warning_LED(){
 	BSP_LED_On(LED3);
 }
@@ -48,15 +49,15 @@ static void Normal_LED(){
 
 
 // Lee la temperatura del sensor MAX30205
-static float max30205_read_temperature(I2C_HandleTypeDef *hi2c) {
-    uint8_t data[2]; //almacena los datos de temperatura en bruto recibidos del sensor.
-    // Lee los datos de temperatura del sensor MAX30205 a través de la comunicación I2C y los guarda en el array "data".
-    i2c_read(hi2c, MAX30205_ADDRESS, MAX30205_TEMP_REG, data, 2);
-    uint16_t raw_temp = (data[0] << 8) | data[1];	/*Combina el primer y segundo byte para obtener
-    												un valor de 16 bits que representa la
-    												temperatura en bruto.*/
-    return raw_temp * T_CONST; /*Convierte el valor en bruto de la temperatura a grados Celsius y devuelve este valor como un float.*/
-}
+ static void max30205_read_temperature(I2C_HandleTypeDef *hi2c, float *temperature) {
+     uint8_t data[2]; //almacena los datos de temperatura en bruto recibidos del sensor.
+     // Lee los datos de temperatura del sensor MAX30205 a través de la comunicación I2C y los guarda en el array "data".
+     i2c_read(hi2c, MAX30205_ADDRESS, MAX30205_TEMP_REG, data, 2);
+     uint16_t raw_temp = (data[0] << 8) | data[1];	/*Combina el primer y segundo byte para obtener
+     												un valor de 16 bits que representa la
+     												temperatura en bruto.*/
+     *temperature = raw_temp * T_CONST; /*Convierte el valor en bruto de la temperatura a grados Celsius y almacena este valor en la variable apuntada por "temperature".*/
+ }
 // Actualiza el estado de la máquina de estados finitos (FSM)
 void lecturaFSM_update() {
     switch (currentState) {
@@ -78,7 +79,7 @@ void lecturaFSM_update() {
         		}
         	} else {
 
-        		temperature = max30205_read_temperature(&hi2c);// Lee la temperatura del sensor MAX30205
+        		max30205_read_temperature(&hi2c,&temperature);// Lee la temperatura del sensor MAX30205
         		if(temperature>=TEMPW){//se enciende el led de alerta si hay una temperatura alta
         			Warning_LED();
         		}else{
